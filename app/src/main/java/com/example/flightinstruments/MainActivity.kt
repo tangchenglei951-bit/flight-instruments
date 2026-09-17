@@ -67,9 +67,7 @@ class MainActivity : AppCompatActivity() {
                 roll, pitch, heading, airspeed, altitude,
                 climbRate, turnRate, slipSkid
             )
-                if (!cpuStarted) {
-                    instrumentView.setNavData(sensor.heading, data.bearing, 0f, data.accuracy / 1000f)
-                }
+            instrumentView.setNavData(0f, adf, slipSkid, dme)
 
             handler.postDelayed(this, 30L)
         }
