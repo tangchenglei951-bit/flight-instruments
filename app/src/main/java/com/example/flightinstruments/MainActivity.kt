@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import kotlin.math.sin
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,6 +45,34 @@ class MainActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private val debugLog = StringBuilder()
 
+    // CPU 测试时同步运行原版正弦演示
+    private var demoStartTime = 0L
+    private val demoRunnable = object : Runnable {
+        override fun run() {
+            if (!cpuStarted) return
+            val t = (System.currentTimeMillis() - demoStartTime) / 1000.0
+
+            val roll = (180.0 * sin(t / 10.0)).toFloat()
+            val pitch = (90.0 * sin(t / 20.0)).toFloat()
+            val heading = (360.0 * sin(t / 40.0)).toFloat()
+            val airspeed = (125.0 * sin(t / 40.0) + 125.0).toFloat()
+            val altitude = (9000.0 * sin(t / 40.0) + 9000.0).toFloat()
+            val climbRate = (650.0 * sin(t / 20.0)).toFloat()
+            val turnRate = (7.0 * sin(t / 10.0)).toFloat()
+            val slipSkid = (1.0 * sin(t / 10.0)).toFloat()
+            val adf = (-360.0 * sin(t / 50.0)).toFloat()
+            val dme = (99.0 * sin(t / 100.0)).toFloat()
+
+            instrumentView.setFlightData(
+                roll, pitch, heading, airspeed, altitude,
+                climbRate, turnRate, slipSkid
+            )
+            instrumentView.setNavData(0f, adf, slipSkid, dme)
+
+            handler.postDelayed(this, 30L)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -70,14 +99,16 @@ class MainActivity : AppCompatActivity() {
     private fun initHubs() {
         sensorHub = SensorHub(this) { data ->
             sensor = data
-            instrumentView.setFlightData(
-                data.roll, data.pitch, data.heading,
-                gps.speedKmh,
-                if (gps.valid) gps.altitude.toFloat() else 0f,
-                data.verticalSpeed,
-                data.turnRate,
-                0f
-            )
+            if (!cpuStarted) {
+                instrumentView.setFlightData(
+                    data.roll, data.pitch, data.heading,
+                    gps.speedKmh,
+                    if (gps.valid) gps.altitude.toFloat() else 0f,
+                    data.verticalSpeed,
+                    data.turnRate,
+                    0f
+                )
+            }
             instrumentView.sensorText =
                 "加速度 ${data.accelX.format(2)} ${data.accelY.format(2)} ${data.accelZ.format(2)}  " +
                 "陀螺 ${data.gyroX.format(2)} ${data.gyroY.format(2)} ${data.gyroZ.format(2)}  " +
@@ -91,7 +122,7 @@ class MainActivity : AppCompatActivity() {
                 instrumentView.gpsText =
                     "经纬 ${data.latitude.format(6)}, ${data.longitude.format(6)}  " +
                     "精度 ${data.accuracy.format(1)}m"
-                instrumentView.setNavData(sensor.heading, data.bearing, 0f, data.accuracy / 1000f)
+                if (!cpuStarted) {`n                    instrumentView.setNavData(sensor.heading, data.bearing, 0f, data.accuracy / 1000f)`n                }
                 instrumentView.invalidate()
 
                 reverseGeocoder.reverse(data.latitude, data.longitude) { result ->
@@ -128,10 +159,13 @@ class MainActivity : AppCompatActivity() {
             if (cpuStarted) {
                 cpuMonitor.stopStress()
                 cpuStarted = false
+                handler.removeCallbacks(demoRunnable)
                 btnCpu.text = getString(R.string.btn_cpu)
             } else {
                 cpuMonitor.startStress()
                 cpuStarted = true
+                demoStartTime = System.currentTimeMillis()
+                handler.post(demoRunnable)
                 btnCpu.text = "CPU测试中"
             }
         }

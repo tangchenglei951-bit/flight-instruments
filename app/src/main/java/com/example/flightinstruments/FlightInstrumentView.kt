@@ -157,8 +157,8 @@ class FlightInstrumentView @JvmOverloads constructor(
     private fun drawInstrumentMode(canvas: Canvas) {
         val w = width.toFloat()
         val h = height.toFloat()
-        val topHeight = h * 0.44f
-        val gridBottom = h * 0.94f
+        val topHeight = h * 0.48f
+        val gridBottom = h
 
         val topRect = RectF(0f, 0f, w, topHeight)
         if (currentPanel == PANEL_PFD) {
@@ -203,16 +203,16 @@ class FlightInstrumentView @JvmOverloads constructor(
         val w = rect.width()
         val h = rect.height()
 
-        val adiRect = RectF(rect.left + w * 0.26f, rect.top,
-                            rect.left + w * 0.74f, rect.top + h * 0.76f)
+        val adiRect = RectF(rect.left + w * 0.24f, rect.top + h * 0.01f,
+                            rect.left + w * 0.76f, rect.top + h * 0.82f)
         val asiRect = RectF(rect.left, rect.top,
-                            rect.left + w * 0.26f, rect.top + h * 0.46f)
-        val altRect = RectF(rect.left + w * 0.74f, rect.top,
-                            rect.right, rect.top + h * 0.46f)
-        val vsiRect = RectF(rect.left + w * 0.74f, rect.top + h * 0.46f,
-                            rect.right, rect.top + h * 0.78f)
-        val hsiRect = RectF(rect.left + w * 0.22f, rect.top + h * 0.72f,
-                            rect.left + w * 0.78f, rect.bottom)
+                            rect.left + w * 0.24f, rect.top + h * 0.45f)
+        val altRect = RectF(rect.left + w * 0.76f, rect.top,
+                            rect.right, rect.top + h * 0.45f)
+        val vsiRect = RectF(rect.left + w * 0.76f, rect.top + h * 0.42f,
+                            rect.right, rect.top + h * 0.85f)
+        val hsiRect = RectF(rect.left + w * 0.30f, rect.top + h * 0.74f,
+                            rect.left + w * 0.70f, rect.bottom)
 
         drawAdi(canvas, adiRect)
         drawAsi(canvas, asiRect)
