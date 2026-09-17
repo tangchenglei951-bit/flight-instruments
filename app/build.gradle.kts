@@ -3,6 +3,9 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val appVersionCode = (project.findProperty("appVersionCode") as String?)?.toInt() ?: 1
+val appVersionName = (project.findProperty("appVersionName") as String?) ?: "1.0.0"
+
 android {
     namespace = "com.example.flightinstruments"
     compileSdk = 35
@@ -11,8 +14,8 @@ android {
         applicationId = "com.example.flightinstruments"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
     }
 
     buildTypes {
