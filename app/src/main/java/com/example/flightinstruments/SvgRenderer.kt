@@ -2,56 +2,71 @@ package com.example.flightinstruments
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Picture
 import android.graphics.RectF
 import com.caverock.androidsvg.SVG
+import kotlin.math.min
 
 /**
  * 负责加载并绘制 qfi 的 SVG 矢量贴图。
- * 资源位于 assets/qfi/images/ 下，与原始 Qt 工程一致。
+ *
+ * 与 Qt 中 QGraphicsSvgItem 的行为保持一致：
+ *   - SVG 原始坐标以 240x240（小仪表）或 300x300（PFD）为准
+ *   - 按目标区域等比缩放并居中
+ *   - 以 originX/originY（原始坐标）为旋转中心
+ *   - translateX/translateY 同样在原始坐标下，随缩放一起生效
  */
 object SvgRenderer {
 
     private const val BASE_PATH = "qfi/images/"
-    private val cache = HashMap<String, SVG?>()
+    private val cache = HashMap<String, Picture?>()
 
-    private fun load(context: Context, name: String): SVG? {
+    private fun load(context: Context, name: String): Picture? {
         if (cache.containsKey(name)) {
             return cache[name]
         }
-        val svg = try {
-            SVG.getFromAsset(context.assets, BASE_PATH + name)
+        val picture = try {
+            val svg = SVG.getFromAsset(context.assets, BASE_PATH + name)
+            svg.renderToPicture()
         } catch (_: Exception) {
             null
         }
-        cache[name] = svg
-        return svg
+        cache[name] = picture
+        return picture
     }
 
-    /**
-     * 将指定 SVG 绘制到 rect 区域。
-     * rotation 以 rect 中心（或指定中心）旋转，translate 用于俯仰位移。
-     */
     fun draw(
         context: Context,
         canvas: Canvas,
         name: String,
         rect: RectF,
         rotation: Float = 0f,
-        rotateCx: Float = rect.centerX(),
-        rotateCy: Float = rect.centerY(),
+        originX: Float = 120f,
+        originY: Float = 120f,
         translateX: Float = 0f,
         translateY: Float = 0f
     ) {
-        val svg = load(context, name) ?: return
+        val picture = load(context, name) ?: return
+        val docW = picture.width.toFloat()
+        val docH = picture.height.toFloat()
+        if (docW <= 0f || docH <= 0f) {
+            return
+        }
+
+        val scale = min(rect.width() / docW, rect.height() / docH)
+        val left = rect.centerX() - docW * scale / 2f
+        val top = rect.centerY() - docH * scale / 2f
 
         canvas.save()
+        canvas.translate(left, top)
+        canvas.scale(scale, scale)
         if (translateX != 0f || translateY != 0f) {
             canvas.translate(translateX, translateY)
         }
         if (rotation != 0f) {
-            canvas.rotate(rotation, rotateCx, rotateCy)
+            canvas.rotate(rotation, originX, originY)
         }
-        svg.renderToCanvas(canvas, rect)
+        canvas.drawPicture(picture)
         canvas.restore()
     }
 }
