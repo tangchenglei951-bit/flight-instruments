@@ -7,3 +7,7 @@ local.properties
 /captures
 .externalNativeBuild/
 .cxx/
+
+# 本地构建产物
+apk*/
+*.zip
