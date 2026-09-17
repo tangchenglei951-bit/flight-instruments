@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">飞行仪表</string>
+    <string name="btn_cpu">CPU测试</string>
+    <string name="btn_network">网络测试</string>
+    <string name="btn_sensor_on">传感器开</string>
+    <string name="btn_sensor_off">传感器关</string>
+    <string name="mode_instrument">仪表模式</string>
+    <string name="mode_text">文本模式</string>
+    <string name="mode_debug">调试模式</string>
+</resources>
