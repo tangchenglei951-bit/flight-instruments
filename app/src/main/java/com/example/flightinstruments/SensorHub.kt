@@ -63,18 +63,16 @@ class SensorHub(
     override fun onSensorChanged(event: SensorEvent) {
         when (event.sensor.type) {
             Sensor.TYPE_ROTATION_VECTOR -> {
-                val ok = SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-                if (ok) {
-                    SensorManager.getOrientation(rotationMatrix, orientationValues)
-                    val azimuth = Math.toDegrees(orientationValues[0].toDouble()).toFloat()
-                    val pitch = Math.toDegrees(orientationValues[1].toDouble()).toFloat()
-                    val roll = Math.toDegrees(orientationValues[2].toDouble()).toFloat()
-                    state = state.copy(
-                        pitch = pitch,
-                        roll = roll,
-                        heading = ((azimuth + 360f) % 360f)
-                    )
-                }
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                SensorManager.getOrientation(rotationMatrix, orientationValues)
+                val azimuth = Math.toDegrees(orientationValues[0].toDouble()).toFloat()
+                val pitch = Math.toDegrees(orientationValues[1].toDouble()).toFloat()
+                val roll = Math.toDegrees(orientationValues[2].toDouble()).toFloat()
+                state = state.copy(
+                    pitch = pitch,
+                    roll = roll,
+                    heading = ((azimuth + 360f) % 360f)
+                )
             }
             Sensor.TYPE_ACCELEROMETER -> state = state.copy(
                 accelX = event.values[0],
