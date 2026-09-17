@@ -67,7 +67,9 @@ class MainActivity : AppCompatActivity() {
                 roll, pitch, heading, airspeed, altitude,
                 climbRate, turnRate, slipSkid
             )
-            instrumentView.setNavData(0f, adf, slipSkid, dme)
+                if (!cpuStarted) {
+                    instrumentView.setNavData(sensor.heading, data.bearing, 0f, data.accuracy / 1000f)
+                }
 
             handler.postDelayed(this, 30L)
         }
@@ -122,7 +124,9 @@ class MainActivity : AppCompatActivity() {
                 instrumentView.gpsText =
                     "经纬 ${data.latitude.format(6)}, ${data.longitude.format(6)}  " +
                     "精度 ${data.accuracy.format(1)}m"
-                if (!cpuStarted) {`n                    instrumentView.setNavData(sensor.heading, data.bearing, 0f, data.accuracy / 1000f)`n                }
+                if (!cpuStarted) {
+                    instrumentView.setNavData(sensor.heading, data.bearing, 0f, data.accuracy / 1000f)
+                }
                 instrumentView.invalidate()
 
                 reverseGeocoder.reverse(data.latitude, data.longitude) { result ->
