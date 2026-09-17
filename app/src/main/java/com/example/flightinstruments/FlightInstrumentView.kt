@@ -162,11 +162,9 @@ class FlightInstrumentView @JvmOverloads constructor(
 
         val topRect = RectF(0f, 0f, w, topHeight)
         if (currentPanel == PANEL_PFD) {
-            SvgRenderer.draw(context, canvas, "pfd/pfd.svg", topRect,
-                originX = 150f, originY = 150f)
+            drawPfdPanel(canvas, topRect)
         } else {
-            SvgRenderer.draw(context, canvas, "nav/nav.svg", topRect,
-                originX = 150f, originY = 150f)
+            drawNavPanel(canvas, topRect)
         }
 
         textGray.textSize = 13f * density
@@ -199,6 +197,41 @@ class FlightInstrumentView @JvmOverloads constructor(
         }
     }
 
+    // ---------------- 顶部 PFD / NAV ----------------
+    // 用已经校准的 qfi 图层在顶部拼出 PFD 面板，避免使用带黑块的 pfd.svg 底图。
+    private fun drawPfdPanel(canvas: Canvas, rect: RectF) {
+        val w = rect.width()
+        val h = rect.height()
+
+        val adiRect = RectF(rect.left + w * 0.26f, rect.top,
+                            rect.left + w * 0.74f, rect.top + h * 0.76f)
+        val asiRect = RectF(rect.left, rect.top,
+                            rect.left + w * 0.26f, rect.top + h * 0.46f)
+        val altRect = RectF(rect.left + w * 0.74f, rect.top,
+                            rect.right, rect.top + h * 0.46f)
+        val vsiRect = RectF(rect.left + w * 0.74f, rect.top + h * 0.46f,
+                            rect.right, rect.top + h * 0.78f)
+        val hsiRect = RectF(rect.left + w * 0.22f, rect.top + h * 0.72f,
+                            rect.left + w * 0.78f, rect.bottom)
+
+        drawAdi(canvas, adiRect)
+        drawAsi(canvas, asiRect)
+        drawAlt(canvas, altRect)
+        drawVsi(canvas, vsiRect)
+        drawHsi(canvas, hsiRect)
+    }
+
+    private fun drawNavPanel(canvas: Canvas, rect: RectF) {
+        val hsiRect = RectF(rect.left + rect.width() * 0.20f, rect.top,
+                            rect.left + rect.width() * 0.80f, rect.bottom)
+        drawHsi(canvas, hsiRect)
+
+        textCyan.textSize = 15f * density
+        canvas.drawText("HDG ${heading.format(0)}", rect.left + 10f * density,
+            rect.top + 24f * density, textCyan)
+        canvas.drawText("BRG ${navBearing.format(0)}", rect.right - 130f * density,
+            rect.top + 24f * density, textCyan)
+    }
     // ---------------- ASI ----------------
     private fun drawAsi(canvas: Canvas, rect: RectF) {
         SvgRenderer.draw(context, canvas, "asi/asi_face.svg", rect)
